@@ -8,7 +8,6 @@ export function useApi<T>(
   requestHeaders: object,
 ) {
   const config = useRuntimeConfig();
-  const router = useRouter();
 
   if (!config.public.apiUrl) {
     throw createError({
