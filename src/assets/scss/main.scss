@@ -1,10 +1,12 @@
 @use "base/reset" as *;
+@use "fonts" as *;
 
 html,
 body {
     font-family: 'PT Root UI', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 400;
     background: $light-block-primary;
+    color: $light-text-primary;
 }
 
 .wrapper {
@@ -21,4 +23,5 @@ body {
 
 svg {
     color: $light-icon-default;
+    margin: 0;
 }
