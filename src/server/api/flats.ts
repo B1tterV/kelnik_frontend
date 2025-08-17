@@ -1,19 +1,24 @@
 import { generateMockFlats } from '~/server/mocks/flatsGenerator'
 
+// Глобальная переменная для хранения сгенерированных данных
+let cachedFlats: ReturnType<typeof generateMockFlats> | null = null
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   
   // Имитация задержки API
   await new Promise(resolve => setTimeout(resolve, 500))
   
-  // Генерируем моки
-  let allFlats = generateMockFlats(90)
+  // Генерируем моки только при первом вызове
+  if (!cachedFlats) cachedFlats = generateMockFlats(90)
+
+  let filteredFlats = [...cachedFlats]
   
   // Фильтрация по цене
   if (query.priceStart && query.priceEnd) {
     const priceStart = Number(query.priceStart)
     const priceEnd = Number(query.priceEnd)
-    allFlats = allFlats.filter(flat => {
+    filteredFlats = filteredFlats.filter(flat => {
       return flat.price >= priceStart && flat.price <= priceEnd
     })
   }
@@ -24,7 +29,7 @@ export default defineEventHandler(async (event) => {
     const footageEnd = Number(query.footageEnd)
 
     if (!isNaN(footageStart) && !isNaN(footageEnd)) {
-      allFlats = allFlats.filter(flat => {
+      filteredFlats = filteredFlats.filter(flat => {
         const footage = parseFloat(flat.footage.replace(',', '.'))
         return footage >= footageStart && footage <= footageEnd
       })
@@ -36,12 +41,12 @@ export default defineEventHandler(async (event) => {
     const rooms = Array.isArray(query['rooms[]']) 
       ? query['rooms[]'].map(Number) 
       : [Number(query['rooms[]'])]
-    allFlats = allFlats.filter(flat => rooms.includes(flat.rooms))
+    filteredFlats = filteredFlats.filter(flat => rooms.includes(flat.rooms))
   }
   
   // Сортировка
   if (query.sortValue && query.sortDirection) {
-    allFlats.sort((a, b) => {
+    filteredFlats.sort((a, b) => {
       let valA: number, valB: number
       
       switch (query.sortValue) {
@@ -70,14 +75,14 @@ export default defineEventHandler(async (event) => {
   const limit = Number(query.limit) || 20
   const start = (page - 1) * limit
   const end = start + limit
-  const last_page = Math.ceil(allFlats.length / limit)
+  const last_page = Math.ceil(filteredFlats.length / limit)
   
   return {
     status: 'success',
     data: {
-      data: allFlats.slice(start, end),
+      data: filteredFlats.slice(start, end),
       pagination: {
-        total: allFlats.length,
+        total: filteredFlats.length,
         page,
         limit,
         last_page,

@@ -3,6 +3,7 @@ export interface Header {
     value: string
     sortable?: boolean
     align?: 'left' | 'center' | 'right'
+    isBoldBody?: boolean
 }
 
 export type SortDirection = 'asc' | 'desc' | null

@@ -2,8 +2,13 @@
 // Icons
 import ChevronUpIcon from '@/assets/icons/chevron-up.svg'
 
+// Composables
+import { useWindow } from '@/composables/useWindow';
+
 // Types
 import type { Header, SortDirection } from '@/types/table'
+
+const { middleWindow } = useWindow()
 
 const emit = defineEmits<{
   (e: 'sort', payload: { column: string | null, direction: SortDirection }): void
@@ -13,10 +18,12 @@ const props = defineProps({
   headers: { type: Array as PropType<Header[]>, required: true },
   items: { type: Array as PropType<any[]>, required: true },
   loading: { type: Boolean, default: false },
+  loadingMore: { type: Boolean, default: false },
   page: { type: Number, default: 1 },
   limit: { type: Number, default: 20 },
   defaultSort: { type: String || null, default: null },
   defaultSortDirection: { type: String as PropType<SortDirection>, default: null },
+  isCustomMobile: { type: Boolean, default: false }
 })
 
 const sortBy = ref<string | null>(props.defaultSort)
@@ -43,13 +50,20 @@ const handleSort = (column: string) => {
     direction: sortDirection.value 
   })
 }
+
+const filteredHeaders = computed(() => {
+  if (middleWindow.value) {
+    return props.headers.filter(header => header.sortable !== false)
+  }
+  return props.headers
+})
 </script>
 
 <template>
   <div class="base-table">
     <div class="base-table__table-header">
       <div
-        v-for="(header, index) in headers"
+        v-for="(header, index) in filteredHeaders"
         :key="index"
         class="header-cell"
         :class="[
@@ -83,8 +97,21 @@ const handleSort = (column: string) => {
           </div>
         </div>
       </div>
+      <div v-if="loading" class="loading-indicator"></div>
     </div>
-    <div class="base-table__table-body">
+    <div
+      v-if="items.length && (isCustomMobile && middleWindow)"
+      class="base-table__table-body"
+    >
+        <div
+          v-for="(item, rowIndex) in items"
+          :key="rowIndex"
+          class="table-row"
+        >
+          <slot name="custom-mobile" :item="item"></slot>
+      </div>
+    </div>
+    <div v-else-if="items.length" class="base-table__table-body">
       <div
         v-for="(item, rowIndex) in items"
         :key="rowIndex"
@@ -94,7 +121,10 @@ const handleSort = (column: string) => {
           v-for="(header, colIndex) in headers"
           :key="colIndex"
           class="body-cell"
-          :class="`body-cell_${header.align}` || 'body-cell_left'"
+          :class="[
+            `body-cell_${header.align}` || 'body-cell_left',
+            { 'is_bold': header.isBoldBody }
+          ]"
         >
           <slot
             v-if="useSlots()[header.value]"
@@ -106,21 +136,66 @@ const handleSort = (column: string) => {
           </template>
         </div>
       </div>
+      <div v-if="loadingMore" class="loading-more">
+        <div class="circle"></div>
+      </div>
+    </div>
+    <div v-else-if="!loading" class="base-table__table-empty">
+      По данным фильтрам ничего не найдено
     </div>
   </div>
 </template>
   
 <style scoped lang="scss">
+@keyframes loadingShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .base-table {
   &__table-header{
+    position: relative;
     display: flex;
     border-bottom: 1px solid #e0e0e0;
     padding: 12px 0;
+
+    .loading-indicator {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        rgba($light-block-green, 0) 0%,
+        rgba($light-block-green, 0.5) 20%,
+        $light-block-green 50%,
+        rgba($light-block-green, 0.5) 80%,
+        rgba($light-block-green, 0) 100%
+      );
+      background-size: 200% 100%;
+      animation: loadingShimmer 4.5s infinite linear;
+      transform: translateY(1px);
+    }
 
     .header-cell{
       flex: 1;
       padding: 0 16px;
       font-weight: 500;
+      border-radius: 5px;
 
       &_left {
         text-align: left;
@@ -168,10 +243,24 @@ const handleSort = (column: string) => {
             opacity: 1;
           }
 
+          &_asc {
+            margin-bottom: 2px !important;
+          }
+
           &_desc{
             transform: rotate(180deg);
           }
         }
+      }
+    }
+
+    @media (max-width: $window-tablet) {
+      border-bottom: none;
+      .header-cell{
+        width: fit-content;
+        flex: none;
+        padding-left: 0;
+        padding-right: 20px;
       }
     }
   }
@@ -185,8 +274,10 @@ const handleSort = (column: string) => {
       padding: 16px 0;
 
       .body-cell {
+        @include UI-16-24-400;
         flex: 1;
         padding: 0 16px;
+        line-height: 24px;
 
         &_left {
           text-align: left;
@@ -197,8 +288,49 @@ const handleSort = (column: string) => {
         &_right {
           text-align: right;
         }
+
+        &.is_bold{
+          @include UI-16-24-500;
+        }
       }
     }
+
+    .loading-more {
+      display: flex;
+      justify-content: center;
+      padding: 16px 0;
+      width: 100%;
+      .circle{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 16px 0;
+        
+        &::after {
+          content: "";
+          display: block;
+          width: 20px;
+          height: 20px;
+          border: 2px solid $light-block-gray;
+          border-top-color: $light-block-green;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+      }
+    }
+
+    @media (max-width: $window-tablet) {
+      .table-row {
+        border-bottom: none;
+      }
+    }
+  }
+  &__table-empty{
+    @include UI-16-24-500;
+    padding: 10px 0;
+    width: 100%;
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
   }
 }
 </style>
