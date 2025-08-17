@@ -247,7 +247,7 @@ watch(
 
     &__filters{
       width: 399px;
-      .flats-filter {
+      .flats-filter_wrapper {
         position: sticky;
         top: 20px;
       }
