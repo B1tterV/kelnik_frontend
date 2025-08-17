@@ -23,5 +23,8 @@ body {
 
 svg {
     color: $light-icon-default;
-    margin: 0;
 }
+
+.nuxt-icon{
+    margin-bottom: 0 !important;
+  }

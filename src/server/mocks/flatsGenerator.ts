@@ -8,8 +8,9 @@ export const generateMockFlats = (count = 50): Flat[] => {
   return Array.from({ length: count }, (_, i) => {
     const rooms = Math.floor(Math.random() * 4) + 1;
     const footage = (Math.random() * 200 + 30).toFixed(1).replace(".", ",");
-    const floor = `${Math.floor(Math.random() * 25) + 1} из ${Math.floor(Math.random() * 25) + 1}`;
-    const price = (Math.random() * 90_000_000 + 1_000_000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    const currentFloor = Math.floor(Math.random() * 17) + 1;
+    const floor = `${currentFloor} из 17`;
+    const price = (Math.random() * 90_000_000 + 1_000_000);
   
     return {
       id: `flat-${i}`,

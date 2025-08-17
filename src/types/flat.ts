@@ -1,4 +1,5 @@
 import type { SortDirection } from '@/types/table'
+import type { ResponseData } from '@/types/response'
 
 interface Layout {
   img: string;
@@ -12,11 +13,11 @@ export interface Flat {
   flat: string;
   footage: string;
   floor: string;
-  price: string;
+  price: number;
   rooms: number;
 }
 
-type SortValue = 'price' | 'footage' | 'floor'
+export type SortValue = 'price' | 'footage' | 'floor' | null
 
 interface FilterFromTo {
     start: number;
@@ -32,3 +33,5 @@ export interface GetFlatsParams {
   sortValue?: SortValue
   sortDirection?: SortDirection
 }
+
+export type FlatsResponse = ResponseData<Flat[]>
