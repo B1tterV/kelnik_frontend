@@ -60,7 +60,8 @@ export default defineNuxtConfig({
   viewport: {
     breakpoints: {
       mobile: 375,
-      tablet: 960,
+      middleTablet: 751,
+      tablet: 961,
       desktop: 1440,
     },
   },
@@ -91,6 +92,7 @@ export default defineNuxtConfig({
           additionalData: `
             @use "~/assets/scss/color-variables" as *;
             @use "~/assets/scss/fonts/typography" as *;
+            @use "~/assets/scss/base/breakpoints" as *;
           `,
         },
       },

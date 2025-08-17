@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Flat, GetFlatsParams, FlatsResponse } from '@/types/flat'
+import type { GetFlatsParams, FlatsResponse } from '@/types/flat'
 
 export const useFlatsStore = defineStore('flats', () => {
   const loading = ref(false)

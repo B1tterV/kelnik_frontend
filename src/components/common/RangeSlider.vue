@@ -171,11 +171,10 @@ onUnmounted(() => {
         .value-item{
             @include UI-16-24-500;
             span {
-                @include UI-16-24-400;
+                @include UI-14-20-400;
                 opacity: 0.5;
             }
         }
-
     }
 
     &__wrapper {
@@ -235,6 +234,18 @@ onUnmounted(() => {
         &:active {
             transform: translateY(-50%) scale(1.2);
         }
+    }
+
+    @media (max-width: $window-middle-desktop) {
+      &__values {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          margin-bottom: 6px;
+
+          .value-item{
+              @include UI-14-20-500;
+          }
+      }
     }
 }
 </style>

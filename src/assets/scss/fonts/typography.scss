@@ -30,6 +30,12 @@
     font-weight: 400;
 }
 
+@mixin UI-14-20-500 {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+}
+
 @mixin UI-14-20-400 {
     font-size: 14px;
     line-height: 20px;
